@@ -12,5 +12,5 @@ Instructions for installing ...
 Run the following to download the code:
 
 ```
-git clone git://github.com/benanne/kaggle-galaxies.git
+git clone git://github.com/guijo0/kaggle_ultrasound_nerve.git
 ```
