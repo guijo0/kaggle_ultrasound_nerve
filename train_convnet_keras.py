@@ -17,6 +17,7 @@ NB_EPOCH = 100
 RANDOM_STATE = 51
 NFOLDS = 6
 
+#TODO model interface??
 model = Sequential()
 model.add(Convolution2D(4, 4, 4, border_mode='same', init='he_normal',
                         input_shape = (1, IMG_ROWS, IMG_COLS)))

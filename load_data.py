@@ -30,7 +30,7 @@ def load_train(img_rows, img_cols):
 
     print('Read train data time: {} seconds'.format(
         round(time.time() - start_time, 2)))
-    data, labels = normalise_data(X_train, mask_train, img_rows, img_cols, 'Train')
+    data, labels = normalise_data(X_train, mask_train, img_rows, img_cols)
     return data, labels, X_train_id
 
 def load_test(img_rows, img_cols):
@@ -65,7 +65,7 @@ def get_empty_mask_state(mask):
     return np.array(out)
 
 
-def normalise_data(data, labels, img_rows, img_cols, dtype='Test'):
+def normalise_data(data, labels, img_rows, img_cols):
 
     data = np.array(data, dtype=np.uint8)
     data = data.reshape(data.shape[0], 1, img_rows, img_cols)
@@ -74,12 +74,8 @@ def normalise_data(data, labels, img_rows, img_cols, dtype='Test'):
     data /= 255
 
     if labels is not None:
-        dtype = 'Training'
         labels = np.array(labels, dtype=np.uint8)
         labels = get_empty_mask_state(labels)
         labels = np_utils.to_categorical(labels, 2)
-
-    print dtype, 'shape:', data.shape
-    print dtype, 'samples:', data.shape[0]
 
     return data, labels

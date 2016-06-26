@@ -1,5 +1,6 @@
 import os
 import cv2
+import sys
 import glob
 import datetime
 import numpy as np
@@ -39,6 +40,11 @@ def find_best_mask():
     overall_mask = overall_mask.astype(np.uint8)
     return overall_mask
 
+if len(sys.argv) != 2:
+    print('Wrong number of arguments')
+    sys.exit()
 
-submission_data = np.load('./output/submission_data.npz')
+sub_data = sys.argv[1] #e.g. submission_data.npz
+
+submission_data = np.load(os.path.join(SUBMISSION_PATH, sub_data))
 create_submission(submission_data['test_res'], submission_data['test_id'])
