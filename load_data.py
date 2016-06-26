@@ -5,41 +5,40 @@ import glob
 import numpy as np
 from settings import TRAIN_DATA_PATH, TEST_DATA_PATH
 from keras.utils import np_utils
+from keras.preprocessing.image import Iterator
 
-# Data Loading.
+TIF_FILES = '*[0-9].tif'
 
 def get_im_cv2(path, img_rows, img_cols):
     img = cv2.imread(path, 0)
     return cv2.resize(img, (img_cols, img_rows), interpolation=cv2.INTER_LINEAR)
 
-def load_train(img_rows, img_cols):
-    X_train = []
-    X_train_id = []
-    mask_train = []
-    start_time = time.time()
 
-    files = glob.glob(os.path.join(TRAIN_DATA_PATH, '*[0-9].tif'))
+def load_train(img_rows, img_cols):
+    data = []
+    labels = []
+
+    files = glob.glob(os.path.join(TRAIN_DATA_PATH, TIF_FILES))
+
     for fl in files:
         flbase = os.path.basename(fl)
         img = get_im_cv2(fl, img_rows, img_cols)
-        X_train.append(img)
-        X_train_id.append(flbase[:-4])
+        data.append(img)
+
         mask_path = os.path.join(TRAIN_DATA_PATH, flbase[:-4] + "_mask.tif")
         mask = get_im_cv2(mask_path, img_rows, img_cols)
-        mask_train.append(mask)
+        labels.append(mask)
 
-    print('Read train data time: {} seconds'.format(
-        round(time.time() - start_time, 2)))
-    data, labels = normalise_data(X_train, mask_train, img_rows, img_cols)
-    return data, labels, X_train_id
+    data, labels = normalise_data(data, labels)
+    return data, labels
 
 def load_test(img_rows, img_cols):
 
-    files = glob.glob(os.path.join(TEST_DATA_PATH, '*[0-9].tif'))
+    files = glob.glob(os.path.join(TEST_DATA_PATH, TIF_FILES))
     X_test = []
     X_test_id = []
     total = 0
-    start_time = time.time()
+
     for fl in files:
         flbase = os.path.basename(fl)
         img = get_im_cv2(fl, img_rows, img_cols)
@@ -47,35 +46,17 @@ def load_test(img_rows, img_cols):
         X_test_id.append(flbase[:-4])
         total += 1
 
-    print('Read test data time: {} seconds'.format(
-        round(time.time() - start_time, 2)))
-    data, _ = normalise_data(X_test, None, img_rows, img_cols)
-    return data, _, X_test_id
+    data, _ = normalise_data(X_test)
+    return data, X_test_id
 
+def normalise_data(data, labels=None):
 
-# Data Preprocessing.
-
-def get_empty_mask_state(mask):
-    out = []
-    for i in range(len(mask)):
-        if mask[i].sum() == 0:
-            out.append(0)
-        else:
-            out.append(1)
-    return np.array(out)
-
-
-def normalise_data(data, labels, img_rows, img_cols):
-
-    data = np.array(data, dtype=np.uint8)
-    data = data.reshape(data.shape[0], 1, img_rows, img_cols)
-
-    data = data.astype('float32')
+    data = np.array(data, dtype=np.uint8).astype('float32')
     data /= 255
 
     if labels is not None:
         labels = np.array(labels, dtype=np.uint8)
-        labels = get_empty_mask_state(labels)
+        labels = [1 if sum(l.flatten()) > 0 else 0 for l in labels]
         labels = np_utils.to_categorical(labels, 2)
 
     return data, labels

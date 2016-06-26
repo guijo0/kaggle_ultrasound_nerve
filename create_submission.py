@@ -7,10 +7,11 @@ import numpy as np
 from settings import TRAIN_DATA_PATH, SUBMISSION_PATH
 from utils import img_utils
 
+KOEFF = 0.5
 
 def create_submission(predictions, test_id):
     sub_file = os.path.join(SUBMISSION_PATH,
-        'submission_' + str(datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")) + '.csv')
+                            'submission_' + str(datetime.datetime.now().strftime("%Y-%m-%d-%H-%M")) + '.csv')
     subm = open(sub_file, "w")
     mask = find_best_mask()
     encode = img_utils.rle_encode(mask)
@@ -34,17 +35,15 @@ def find_best_mask():
         overall_mask += mask
     overall_mask /= 255
     max_value = overall_mask.max()
-    koeff = 0.5
-    overall_mask[overall_mask < koeff * max_value] = 0
-    overall_mask[overall_mask >= koeff * max_value] = 255
+    overall_mask[overall_mask < KOEFF * max_value] = 0
+    overall_mask[overall_mask >= KOEFF * max_value] = 255
     overall_mask = overall_mask.astype(np.uint8)
     return overall_mask
 
 if len(sys.argv) != 2:
-    print('Wrong number of arguments')
-    sys.exit()
-
-sub_data = sys.argv[1] #e.g. submission_data.npz
+    sub_data = 'submission_data.npz'
+else:
+    sub_data = sys.argv[1]
 
 submission_data = np.load(os.path.join(SUBMISSION_PATH, sub_data))
 create_submission(submission_data['test_res'], submission_data['test_id'])
