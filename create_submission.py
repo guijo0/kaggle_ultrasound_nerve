@@ -1,13 +1,13 @@
 import os
 import cv2
-import sys
 import glob
 import datetime
 import numpy as np
-from settings import TRAIN_DATA_PATH, SUBMISSION_PATH
+from settings import TRAIN_DATA_PATH,SUBMISSION_PATH
 from utils import img_utils
 
 KOEFF = 0.5
+
 
 def create_submission(predictions, test_id):
     sub_file = os.path.join(SUBMISSION_PATH,
@@ -22,6 +22,8 @@ def create_submission(predictions, test_id):
             subm.write(encode)
         subm.write('\n')
     subm.close()
+
+# TODO What is going on here??
 
 
 def find_best_mask():
@@ -40,10 +42,6 @@ def find_best_mask():
     overall_mask = overall_mask.astype(np.uint8)
     return overall_mask
 
-if len(sys.argv) != 2:
-    sub_data = 'submission_data.npz'
-else:
-    sub_data = sys.argv[1]
 
-submission_data = np.load(os.path.join(SUBMISSION_PATH, sub_data))
-create_submission(submission_data['test_res'], submission_data['test_id'])
+submission_data = np.load('./output/submission_data.npz')
+create_submission(submission_data['arr_0'], submission_data['arr_1'])

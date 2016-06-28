@@ -9,6 +9,7 @@ from keras.preprocessing.image import Iterator
 
 TIF_FILES = '*[0-9].tif'
 
+
 def get_im_cv2(path, img_rows, img_cols):
     img = cv2.imread(path, 0)
     return cv2.resize(img, (img_cols, img_rows), interpolation=cv2.INTER_LINEAR)
@@ -32,6 +33,7 @@ def load_train(img_rows, img_cols):
     data, labels = normalise_data(data, labels)
     return data, labels
 
+
 def load_test(img_rows, img_cols):
 
     files = glob.glob(os.path.join(TEST_DATA_PATH, TIF_FILES))
@@ -48,6 +50,7 @@ def load_test(img_rows, img_cols):
 
     data, _ = normalise_data(X_test)
     return data, X_test_id
+
 
 def normalise_data(data, labels=None):
 
