@@ -52,6 +52,61 @@ def load_test(img_rows, img_cols):
     return data, X_test_id
 
 
+def tmp_create_more_data():
+    tifs = glob.glob(os.path.join(TRAIN_DATA_PATH, TIF_FILES))
+
+    np.random.shuffle(glob.glob(os.path.join(TRAIN_DATA_PATH, TIF_FILES)))
+    count = 0
+    for img_path in tifs:
+
+        img_base = os.path.basename(img_path)
+        img = cv2.imread(img_path, 0)
+
+        mask_path = os.path.join(TRAIN_DATA_PATH, img_base[:-4] + "_mask.tif")
+        mask = cv2.imread(mask_path, 0)
+
+        if sum(mask.flatten()) > 0:
+            new_img, new_mask = image_transform(img, mask)
+            cv2.imwrite(os.path.join(TRAIN_DATA_PATH, "transform" + img_base), new_img)
+            cv2.imwrite(os.path.join(TRAIN_DATA_PATH, "transform" + img_base[:-4] + "_mask.tif"), new_mask)
+            count += 1
+            print count
+
+        if count > 1000:
+            break
+
+
+def image_transform(img, mask):
+
+    rowPix = [i for i, v in enumerate(np.amax(mask, axis=1)) if v > 0]
+    colPix = [i for i, v in enumerate(np.amax(mask, axis=0)) if v > 0]
+
+    mi_rp = min(rowPix) - np.random.randint(2,10)
+    mi_cp = min(colPix) - np.random.randint(2,10)
+    ma_rp = max(rowPix) + np.random.randint(2,10)
+    ma_cp = max(colPix) + np.random.randint(2,10)
+
+    w = img.shape[0]
+    h = img.shape[1]
+
+    new_image = cv2.resize(img[mi_rp:ma_rp, mi_cp:ma_cp],
+                           (h, w), interpolation=cv2.INTER_CUBIC)
+
+    new_mask = cv2.resize(mask[mi_rp:ma_rp, mi_cp:ma_cp],
+                          (h, w), interpolation=cv2.INTER_CUBIC)
+
+    r = np.random.random()
+
+    if r > 0.6:
+        new_image = cv2.flip(new_image, 1)
+        new_mask = cv2.flip(new_mask, 1)
+    elif r < 0.3:
+        new_image = cv2.flip(new_image, 0)
+        new_mask = cv2.flip(new_mask, 0)
+
+    return new_image, new_mask
+
+
 def normalise_data(data, labels=None):
 
     data = np.array(data, dtype=np.uint8).astype('float32')
@@ -63,3 +118,6 @@ def normalise_data(data, labels=None):
         labels = np_utils.to_categorical(labels, 2)
 
     return data, labels
+
+if __name__ == '__main__':
+    tmp_create_more_data()
