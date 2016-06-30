@@ -7,13 +7,8 @@ from keras.layers import Input, merge, UpSampling2D
 from keras.layers.convolutional import Convolution2D, MaxPooling2D
 from keras.optimizers import SGD, Adam
 
-from tflearn.layers.core import input_data, dropout, fully_connected
-from tflearn.layers.conv import conv_2d, max_pool_2d
-from tflearn.layers.estimator import regression
-from tflearn.optimizers import Momentum
 
-
-def load_keras_model(structure, weights):
+def load_keras_model(structure=None, weights=None):
 
     model = Sequential()
     model.add(Convolution2D(4, 4, 4, border_mode='same', init='he_normal',
@@ -40,40 +35,6 @@ def load_keras_model(structure, weights):
     model.compile(optimizer=sgd, loss='categorical_crossentropy')
 
     return model
-
-def load_tflearn_model(weights=None):
-
-    model = input_data(shape=[None, IMG_ROWS, IMG_COLS, 1])
-
-    model = conv_2d(model, 32, 6, activation='relu')
-    model = max_pool_2d(model, 2, strides=2)
-
-    model = conv_2d(model, 64, 5, activation='relu')
-    model = max_pool_2d(model, 2, strides=2)
-
-    model = conv_2d(model, 128, 3, activation='relu')
-
-    model = conv_2d(model, 128, 3, activation='relu')
-    model = max_pool_2d(model, 2, strides=2)
-
-    model = fully_connected(model, 4096, activation='relu')
-    model = dropout(model, 0.5)
-    model = fully_connected(model, 4096, activation='relu')
-    model = dropout(model, 0.5)
-    model = fully_connected(model, 2, activation='softmax')
-
-    sgd = Momentum(learning_rate=1e-3, lr_decay=1e-6, momentum=0.9)
-    model = regression(model, optimizer=sgd,
-                       loss='categorical_crossentropy')
-
-    model = tflearn.DNN(model, checkpoint_path='convnet_tf_vgg.tfl.ckpt',
-                        max_checkpoints=1, tensorboard_verbose=3)
-
-    if weights:
-        model.load(weights)
-
-    return model
-
 
 def reference_model():
     '''

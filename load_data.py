@@ -3,7 +3,7 @@ import cv2
 import time
 import glob
 import numpy as np
-from settings import TRAIN_DATA_PATH, TEST_DATA_PATH
+from settings import TRAIN_DATA_PATH, TEST_DATA_PATH, IMG_ROWS, IMG_COLS
 from keras.utils import np_utils
 from keras.preprocessing.image import Iterator
 
@@ -31,7 +31,7 @@ def load_train(img_rows, img_cols):
         labels.append(mask)
 
     data, labels = normalise_data(data, labels)
-    return data, labels
+    np.savez('train', data, labels)
 
 
 def load_test(img_rows, img_cols):
@@ -49,22 +49,27 @@ def load_test(img_rows, img_cols):
         total += 1
 
     data, _ = normalise_data(X_test)
-    return data, X_test_id
+    np.savez('test', data, X_test_id)
 
 
-def tmp_create_more_data():
+def create_more_nerve_data():
+
+    # Get all training images.
     tifs = glob.glob(os.path.join(TRAIN_DATA_PATH, TIF_FILES))
+    np.random.shuffle(tifs)
 
-    np.random.shuffle(glob.glob(os.path.join(TRAIN_DATA_PATH, TIF_FILES)))
     count = 0
     for img_path in tifs:
 
+        # Read in image.
         img_base = os.path.basename(img_path)
         img = cv2.imread(img_path, 0)
 
+        # Read in mask.
         mask_path = os.path.join(TRAIN_DATA_PATH, img_base[:-4] + "_mask.tif")
         mask = cv2.imread(mask_path, 0)
 
+        # If mask not empty, transform image and mask and save as new.
         if sum(mask.flatten()) > 0:
             new_img, new_mask = image_transform(img, mask)
             cv2.imwrite(os.path.join(TRAIN_DATA_PATH, "transform" + img_base), new_img)
@@ -89,6 +94,7 @@ def image_transform(img, mask):
     w = img.shape[0]
     h = img.shape[1]
 
+    # Crop the image around the mask (with margin 2-10)
     new_image = cv2.resize(img[mi_rp:ma_rp, mi_cp:ma_cp],
                            (h, w), interpolation=cv2.INTER_CUBIC)
 
@@ -98,9 +104,11 @@ def image_transform(img, mask):
     r = np.random.random()
 
     if r > 0.6:
+        #Vertical flip
         new_image = cv2.flip(new_image, 1)
         new_mask = cv2.flip(new_mask, 1)
     elif r < 0.3:
+        #Horizontal flip
         new_image = cv2.flip(new_image, 0)
         new_mask = cv2.flip(new_mask, 0)
 
@@ -120,4 +128,6 @@ def normalise_data(data, labels=None):
     return data, labels
 
 if __name__ == '__main__':
-    tmp_create_more_data()
+    create_more_nerve_data()
+    load_train(IMG_ROWS, IMG_COLS)
+    load_test(IMG_ROWS, IMG_COLS)
