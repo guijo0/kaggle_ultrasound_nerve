@@ -1,3 +1,4 @@
+import cv2
 
 
 def rle_encode(img, order='F'):
@@ -23,3 +24,7 @@ def rle_encode(img, order='F'):
     for rr in runs:
         z += str(rr[0]) + ' ' + str(rr[1]) + ' '
     return z[:-1]
+
+
+def resize_image(img, img_rows, img_cols):
+    return cv2.resize(img, (img_cols, img_rows), interpolation=cv2.INTER_LINEAR)

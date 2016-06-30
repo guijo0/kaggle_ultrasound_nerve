@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def dice_coef(im1, im2):
     """
     Computes the Dice coefficient, a measure of set similarity.
@@ -27,8 +28,9 @@ def dice_coef(im1, im2):
     intersection = np.logical_and(im1, im2)
     return 2. * intersection.sum() / (im1.sum() + im2.sum())
 
-'''
-This is the actual loss function
-'''
+
 def dice_coef_loss(y_true, y_pred):
-    return -dice(y_true, y_pred)
+    '''
+    Returns negative dice coefficient
+    '''
+    return -dice_coef(y_true, y_pred)
